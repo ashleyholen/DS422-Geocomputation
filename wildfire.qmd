@@ -363,6 +363,14 @@ leaflet() |>
   )
 ```
 
+```{r}
+library(terra)
+# nvbi 
+# cloud masking 
+
+
+```
+
 
 
 ```         
