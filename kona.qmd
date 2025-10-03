@@ -1,7 +1,7 @@
 ---
-title: "🌿 NDVI over Oʻahu with Sentinel-2 (R Tutorial)"
+title: "🌿 NDVI over Kealakekua Mountain Reserve with Sentinel-2 (R Tutorial)"
 subtitle: "From Copernicus Browser to NDVI map in minutes"
-author: "Your Name"
+author: "Ashley Holen"
 format:
   html:
     theme: cosmo
@@ -19,6 +19,8 @@ editor: visual
 library(here)
 library(terra)
 library(sf)
+library(leaflet)
+library(mapview)
 ```
 
 ## NDVI (Normalized Difference Vegetation Index)
@@ -85,5 +87,62 @@ ndvi <- (nir - red) / (nir + red)
 ### Plotting NDVI
 
 ```{r}
+xmin = -155.93  
+xmax = -155.82  
+ymin = 19.45  
+ymax = 19.55  
+
+# Define bounding box for Kealakekua Mountain Reserve
+bbox <- ext(c(-155.93, -155.82, 19.45, 19.55))
+```
+
+```{r}
 plot(ndvi, main = "NDVI")
+```
+
+```{r}
+# Reduce resolution significantly (factor of 8-10 should work)
+ndvi_small <- aggregate(ndvi, fact = 4, fun = mean)
+
+# Create custom breaks and colors
+breaks <- c(-1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 1)
+colors <- c("#4A90E2",      # Ocean (blue)
+           "#CD853F",       # Bare soil/urban (tan)
+           "#DEB887",       # Very sparse (light tan)
+           "#F0E68C",       # Sparse (light yellow)
+           "#ADFF2F",       # Moderate (yellow-green)
+           "#32CD32",       # Good vegetation (lime green)
+           "#228B22",       # Dense vegetation (forest green)
+           "#006400")       # Very dense (dark green)
+
+mapview(ndvi_small,
+        at = breaks,
+        col.regions = colors,
+        layer.name = "NDVI",
+        alpha = 0.8)
+```
+
+```{r}
+# Check CRS
+crs(ndvi)
+
+# If NDVI is in UTM (e.g., EPSG:32605), first make bbox as lon/lat then transform
+bbox_ll <- ext(c(-155.93, -155.82, 19.45, 19.55))  # lon/lat
+bbox_spat <- as.polygons(bbox_ll, crs = "EPSG:4326")
+
+# Reproject bbox to raster CRS
+bbox_proj <- project(bbox_spat, crs(ndvi))
+
+# Crop
+ndvi_crop <- crop(ndvi, bbox_proj)
+
+# (Optional) aggregate for lower resolution
+ndvi_small <- aggregate(ndvi_crop, fact = 4, fun = mean)
+
+# Plot
+mapview(ndvi_small,
+        at = breaks,
+        col.regions = colors,
+        layer.name = "NDVI",
+        alpha = 0.8)
 ```
