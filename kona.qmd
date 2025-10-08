@@ -58,8 +58,23 @@ NDVI = (NIR - Red) / (NIR + Red)
 
 ```{r}
 # Paths to your .jp2 files
-red_path <- here("data/kona_data/T05QKB_20190908T210929_B04_10m.jp2")
-nir_path <- here("data/kona_data/T05QKB_20190908T210929_B08_10m.jp2")
+red_path2019 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2019/T04QHG_20190116T210921_B04_10m.jp2")
+nir_path2019 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2019/T04QHG_20190116T210921_B08_10m.jp2")
+
+red_path2020 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2020/T04QHG_20200225T210919_B04_10m.jp2")
+nir_path2020 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2020/T04QHG_20200225T210919_B08_10m.jp2")
+
+red_path2021 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2021/T04QHG_20211116T210919_B04_10m.jp2")
+nir_path2021 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2021/T04QHG_20211116T210919_B08_10m.jp2")
+
+red_path2022 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2022/T04QHG_20220301T210931_B04_10m.jp2")
+nir_path2022 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2022/T04QHG_20220301T210931_B08_10m.jp2")
+
+red_path2023 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2023/T04QHG_20230306T210921_B04_10m.jp2")
+nir_path2023 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2023/T04QHG_20230306T210921_B08_10m.jp2")
+
+red_path2024 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2024/T04QHG_20240214T210919_B04_10m.jp2")
+nir_path2024 <- here("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/data/kona_data/new/2024/T04QHG_20240214T210919_B08_10m.jp2")
 ```
 
 ### These .jp2 files contain raster data
@@ -70,8 +85,23 @@ nir_path <- here("data/kona_data/T05QKB_20190908T210929_B08_10m.jp2")
 
 ```{r}
 # Read bands directly
-red <- rast(red_path)
-nir <- rast(nir_path)
+red2019 <- rast(red_path2019)
+nir2019 <- rast(nir_path2019)
+
+red2020 <- rast(red_path2020)
+nir2020 <- rast(nir_path2020)
+
+red2021 <- rast(red_path2021)
+nir2021 <- rast(nir_path2021)
+
+red2022 <- rast(red_path2022)
+nir2022 <- rast(nir_path2022)
+
+red2023 <- rast(red_path2023)
+nir2023 <- rast(nir_path2023)
+
+red2024 <- rast(red_path2024)
+nir2024 <- rast(nir_path2024)
 ```
 
 ### Calculating NDVI
@@ -81,68 +111,27 @@ $$
 $$
 
 ```{r}
-ndvi <- (nir - red) / (nir + red)
+ndvi2019 <- (nir2019 - red2019) / (nir2019 + red2019)
+
+ndvi2020 <- (nir2020 - red2020) / (nir2020 + red2020)
+
+ndvi2021 <- (nir2021 - red2021) / (nir2021 + red2021)
+
+ndvi2022 <- (nir2022 - red2022) / (nir2022 + red2022)
+
+ndvi2023 <- (nir2023 - red2023) / (nir2023 + red2023)
+
+ndvi2024 <- (nir2024 - red2024) / (nir2024 + red2024)
+
 ```
 
 ### Plotting NDVI
 
 ```{r}
-xmin = -155.93  
-xmax = -155.82  
-ymin = 19.45  
-ymax = 19.55  
-
-# Define bounding box for Kealakekua Mountain Reserve
-bbox <- ext(c(-155.93, -155.82, 19.45, 19.55))
-```
-
-```{r}
-plot(ndvi, main = "NDVI")
-```
-
-```{r}
-# Reduce resolution significantly (factor of 8-10 should work)
-ndvi_small <- aggregate(ndvi, fact = 4, fun = mean)
-
-# Create custom breaks and colors
-breaks <- c(-1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 1)
-colors <- c("#4A90E2",      # Ocean (blue)
-           "#CD853F",       # Bare soil/urban (tan)
-           "#DEB887",       # Very sparse (light tan)
-           "#F0E68C",       # Sparse (light yellow)
-           "#ADFF2F",       # Moderate (yellow-green)
-           "#32CD32",       # Good vegetation (lime green)
-           "#228B22",       # Dense vegetation (forest green)
-           "#006400")       # Very dense (dark green)
-
-mapview(ndvi_small,
-        at = breaks,
-        col.regions = colors,
-        layer.name = "NDVI",
-        alpha = 0.8)
-```
-
-```{r}
-# Check CRS
-crs(ndvi)
-
-# If NDVI is in UTM (e.g., EPSG:32605), first make bbox as lon/lat then transform
-bbox_ll <- ext(c(-155.93, -155.82, 19.45, 19.55))  # lon/lat
-bbox_spat <- as.polygons(bbox_ll, crs = "EPSG:4326")
-
-# Reproject bbox to raster CRS
-bbox_proj <- project(bbox_spat, crs(ndvi))
-
-# Crop
-ndvi_crop <- crop(ndvi, bbox_proj)
-
-# (Optional) aggregate for lower resolution
-ndvi_small <- aggregate(ndvi_crop, fact = 4, fun = mean)
-
-# Plot
-mapview(ndvi_small,
-        at = breaks,
-        col.regions = colors,
-        layer.name = "NDVI",
-        alpha = 0.8)
+plot(ndvi2019, main = "NDVI 2019")
+plot(ndvi2020, main = "NDVI 2020")
+plot(ndvi2021, main = "NDVI 2021")
+plot(ndvi2022, main = "NDVI 2022")
+plot(ndvi2023, main = "NDVI 2023")
+plot(ndvi2024, main = "NDVI 2024")
 ```
