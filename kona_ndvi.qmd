@@ -135,3 +135,5 @@ plot(ndvi2022, main = "NDVI 2022")
 plot(ndvi2023, main = "NDVI 2023")
 plot(ndvi2024, main = "NDVI 2024")
 ```
+
+Looking at our results, it can be found that there seems to be an increase in NDVI around the reserve area over the time period of 2019-2025. It is key to note though, that the cloud coverage over the area does greatly impact the quality of the satellite imagery. Looking at the space that is not interfering with the cloud coverage, it can be seen that there is an increase in NDVI 2020-2023, but due to the image that we received in 2024, it seems as though NDVI decreased. Overall, it is difficult to form a conclusion when cloud coverage has such a large impact on the data available.
