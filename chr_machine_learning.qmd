@@ -304,7 +304,6 @@ Create feature dependence plots for the next 4 most important variables from the
 ``` r
 # Template:
 #plot_feature_dependence(treeshap1, "percent_children_in_poverty")
-
 ```
 
 What patterns do you notice? Are the relationships linear or non-linear?
