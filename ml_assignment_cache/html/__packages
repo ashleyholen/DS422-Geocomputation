@@ -1,0 +1,12 @@
+ggplot2
+tidycensus
+dplyr
+tidyr
+stringr
+mapgl
+viridisLite
+viridis
+randomForest
+treeshap
+mapview
+sf

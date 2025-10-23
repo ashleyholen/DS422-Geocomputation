@@ -277,7 +277,7 @@ After creating your map, answer these questions in a comment:
 
 1.  Where are the highest concentrations of SNAP participation?
 
-    The highest concentrations of SNAP participation are around Hilo, Molokai, and the West side of Oahu.
+    The highest concentrations of SNAP participation are around Hilo, Molokai, and the West side of Oahu. There is also a high spot on East Side of Oahu.
 
 2.  Are there geographic patterns (islands, urban vs. rural)?
 
@@ -420,6 +420,10 @@ Train a Random Forest to predict SNAP participation rates using the other socioe
 # Build a random forest model to predict snap_pct
 # Assign it to an object named 'rf'
 
+
+rf = randomForest(snap_pct ~ ., data = hi_acs_data_ml, ntree = 500)
+rf
+
 ```
 
 ::: {.callout-note collapse="true"}
@@ -428,8 +432,16 @@ Train a Random Forest to predict SNAP participation rates using the other socioe
 Look at the printed output and answer:
 
 1.  **Mean of squared residuals (MSR)**: How accurate are the predictions on average?
+
+    The MSR is 45.40328. This means that this is the average squared difference between the predicted SNAP participation rate and the actual SNAP participation. Thus, prediction errors are around +- 6.7% SNAP participation.
+
 2.  **% Var explained**: What percentage of SNAP variation does the model explain?
+
+    This model explains 58.97% of the variation of SNAP participation in the data set. The other 41% is unexplained.
+
 3.  **Interpretation**: Is this good? What might the model be missing?
+
+    This model captures more than half of relevant patterns, with the prediction error of 6.7% being pretty typical of social data. Since this is census data though, there is sampling/measurement noise, as well as some non-linear interactions and regional differences. The variables included in the model should also be investigated.
 
 Remember: MSR tells you the average squared prediction error. % Var explained is like R² - higher is better!
 :::
@@ -479,10 +491,10 @@ Prepare the model for SHAP analysis by:
 
 # YOUR CODE HERE
 # Step 1: Unify your Random Forest model
-# unified <- unify(???, ???)
+unified <- unify(rf, hi_acs_data_ml)
 
 # Step 2: Calculate SHAP values for first 200 observations
-# treeshap1 <- treeshap(???, ???, verbose = 0)
+treeshap1 <- treeshap(unified, hi_acs_data_ml[1:200, ], verbose = 0)
 
 ```
 
@@ -519,6 +531,7 @@ Create a feature importance plot showing the top 5 most important variables for 
 # YOUR CODE HERE
 # Plot feature importance (top 5 most important features)
 
+plot_feature_importance(treeshap1, max_vars = 5)
 ```
 
 ::: {.callout-note collapse="true"}
@@ -527,9 +540,20 @@ Create a feature importance plot showing the top 5 most important variables for 
 Based on your feature importance plot:
 
 1.  What are the TOP 2 most important predictors of SNAP participation?
+
+    The top 2 most important predictors of SNAP participation are: bachelors_or_higher_pct and poverty_rate_pct.
+
 2.  Why do you think these variables matter?
+
+    These variables matter since they contribute to economic status, and intuitively correlate the need for SNAP.
+
 3.  Are there any surprising results?
+
+    The broadband_pct variable is surprising that it is in the top 5 feature importance model, but when interpreted, it makes sense that internet access is a factor of household income.
+
 4.  What does this tell you about food security in Hawaiʻi?
+
+    This goes to show the importance of education and fighting against poverty in HI, as basic needs such as food are not met for a large group of people.
 :::
 
 ------------------------------------------------------------------------
@@ -553,6 +577,7 @@ Create feature dependence plots for the **top 5 most important features** you id
 #| code-fold: false
 
 # YOUR CODE HERE - Feature Dependence Plot #1
+plot_feature_dependence(treeshap1, "bachelors_or_higher_pct")
 
 ```
 
@@ -561,6 +586,7 @@ Create feature dependence plots for the **top 5 most important features** you id
 #| code-fold: false
 
 # YOUR CODE HERE - Feature Dependence Plot #2
+plot_feature_dependence(treeshap1, "poverty_rate_pct")
 
 ```
 
@@ -569,6 +595,7 @@ Create feature dependence plots for the **top 5 most important features** you id
 #| code-fold: false
 
 # YOUR CODE HERE - Feature Dependence Plot #3
+plot_feature_dependence(treeshap1, "median_income")
 
 ```
 
@@ -577,6 +604,7 @@ Create feature dependence plots for the **top 5 most important features** you id
 #| code-fold: false
 
 # YOUR CODE HERE - Feature Dependence Plot #4
+plot_feature_dependence(treeshap1, "broadband_pct")
 
 ```
 
@@ -585,6 +613,7 @@ Create feature dependence plots for the **top 5 most important features** you id
 #| code-fold: false
 
 # YOUR CODE HERE - Feature Dependence Plot #5
+plot_feature_dependence(treeshap1, "unemployment_rate_pct")
 
 ```
 
@@ -594,11 +623,22 @@ Create feature dependence plots for the **top 5 most important features** you id
 For each plot, write 1-2 sentences about:
 
 1.  **Direction**: Does higher variable value → higher or lower SNAP participation?
+
+The higher bachelors_or_higher_pct, the SNAP participation decreases. An increase of poverty_rate_pct also increases SNAP participation. As median_income increases, SNAP participation increases. As broadband_pct increases, SNAP participation increases. Lastly, as unemployment_rate_pct, SNAP participation generally increases.
+
 2.  **Strength**: Is the relationship strong, moderate, or weak?
+
+The relationship between SNAP participation and bachelors_or_higher_pct I would say is strong. The relationship between SNAP participation and poverty_rate_pct and median_income are moderately strong, and between SNAP participation and broadband_pct and unemployment_rate_pct are more weak.
+
 3.  **Pattern**: Is it linear, or are there non-linear patterns?
+
+Between SNAP participation and bachelors_or_higher_pct, as well as SNAP participation and median_income there is an exponential (non-linear) relationship. Between SNAP participation and poverty_rate_pct, SNAP participation and broadband_pct and SNAP participation and unemployment_rate_pct, there is a linear relationship, but the strengths of each differ.
+
 4.  **Outliers**: Are there interesting outlier tracts?
 
 Example answer: \> "Poverty rate shows a strong positive relationship with SNAP participation. As poverty increases, SHAP values increase substantially, pushing predictions toward higher SNAP participation. The relationship appears roughly linear."
+
+An interesting outlier can be found between SNAP participation and unemployment_rate_pct. Generally, there is a moderate positive relationship between the 2 variables, but there is a case around 35% unemployment where the SNAP participation value does not follow the linear relationship, and rather, is around the median value instead of being the highest SNAP participation like the trend would expect.
 :::
 
 ------------------------------------------------------------------------
@@ -611,8 +651,6 @@ Example answer: \> "Poverty rate shows a strong positive relationship with SNAP 
 Examine what drives predictions for **Census Tract 304.04 on Maui, Hawaiʻi**.
 
 **Hints & Resources:** - This tract is observation #154 in our data (hint: `obs = 154`) - Use: `plot_contribution()` - **Red bars** = pushing toward higher SNAP % - **Blue bars** = pushing toward lower SNAP % - **Bar length** = strength of effect
-
-**Your Code:**
 :::
 
 ```{r}
@@ -622,6 +660,8 @@ Examine what drives predictions for **Census Tract 304.04 on Maui, Hawaiʻi**.
 # YOUR CODE HERE
 # Plot contribution effects for Census Tract 304.04, Maui
 
+plot_contribution(treeshap1, obs = 154)
+
 ```
 
 ::: {.callout-note collapse="true"}
@@ -630,10 +670,24 @@ Examine what drives predictions for **Census Tract 304.04 on Maui, Hawaiʻi**.
 Answer these questions about Maui Census Tract 304.04:
 
 1.  **Baseline**: What's the model's baseline prediction?
+
+    11.193 is the model's baseline prediction.
+
 2.  **Pushers**: Which 2-3 variables push predictions toward HIGHER SNAP%?
+
+    poverty_rate_pct, no_vehicle_pct, renter_pct, broadband_pct
+
 3.  **Pullers**: Which 2-3 variables push predictions toward LOWER SNAP%?
+
+    bachelors_or_higher_pct
+
 4.  **Net Effect**: Is the final prediction above or below the baseline?
+
+    The final prediction of 13.69 is above the baseline.
+
 5.  **Story**: Write 2-3 sentences telling the "story" of this tract's SNAP participation
+
+    For this tract, the poverty rate (+1.46), lack of vehicle access (+0.47), renter percentage (+0.43), and broadband access (+0.42) all push the prediction upward, indicating that these factors are associated with higher SNAP participation in this area. In contrast, a higher percentage of residents with a bachelor’s degree (–0.84) slightly reduces the predicted SNAP rate. Overall, these combined effects raise the model’s prediction to 13.69%, suggesting that socioeconomic challenges such as poverty, limited transportation, and rental housing contribute to elevated SNAP participation in this Maui tract despite relatively high educational attainment.
 :::
 
 ------------------------------------------------------------------------
@@ -649,28 +703,51 @@ Answer these questions in text below:
 
 1.  **Model Performance**: How well does your Random Forest predict SNAP participation? What might explain the remaining unexplained variation?
 
+    The random forest model explains 58.97% of the variation in SNAP participation across census tracts, and SNAP participation differs from the true value by roughly 6–7%. This is a moderately accurate model — it’s finding meaningful patterns, but there’s still room for improvement. Unmeasured variables, policy differences, data quality, model limitations, and human factors can contribute to the unexplained variation.
+
 2.  **Key Drivers**: Based on feature importance and dependence plots, which 2-3 factors are most strongly associated with SNAP participation in Hawaiʻi?
+
+    Based on feature importance and dependence plots, bachelors_or_higher_pct, poverty_rate_pct, and median_income are the key drivers most strongly associated with SNAP participation in HI.
 
 3.  **Equity Implications**:
 
     -   What does the geographic distribution of SNAP participation tell you about food security disparities?
+
+        The geographic distribution of SNAP participation shows that food security disparities are not evenly spread across Hawaiʻi. Areas with the highest SNAP participation — such as Hilo, Molokaʻi, parts of Honolulu, and the west side of Oʻahu — indicate communities facing greater economic hardship and lower food security. These regions likely experience higher poverty rates, limited access to affordable groceries, and fewer employment opportunities.
+
     -   Are certain communities more vulnerable?
+
+        Yes, certain communities are more vulnerable. Many of these areas have historically faced economic inequities, higher costs of living, and limited access to nutritious food options. This could suggest that social and spatial inequalities — including rural isolation and urban housing costs — continue to shape food security outcomes across the islands.
 
 4.  **Limitations**:
 
     -   What important variables might be missing from this analysis?
+
+        Variables such as local food prices, proximity to grocery stores, social services in the area, and cultural or social attitudes toward assistance programs could be implemented into this analysis.
+
     -   What are the limitations of predicting SNAP participation? (Remember: correlation ≠ causation)
+
+        The model identifies statistical associations, not direct causes. Random forests can show which factors co-occur with higher or lower SNAP participation, but they cannot determine why participation differs. Also, measurement and human behavior can greatly influence a social study such as this.
 
 5.  **Policy Recommendations**:
 
     -   Based on your findings, what 2-3 policy interventions might help address food insecurity?
+
+        Resources should focus on communities with high SNAP participation and low food security. Increasing food pantries and grocery access, strengthening mobile and physical access to benefits, and investing in educational and workforce programs are 3 interventions that would help address food insecurity in HI.
+
     -   Who should be targeted? Where should resources be focused?
+
+        The communities in most need (the highest SNAP percentages) such as Hilo, Molokai, and West Oʻahu should be of priority. Focusing on these rural or low income areas would greatly increase state-wide food security.
 
 ### Technical Reflection
 
 6.  **Machine Learning Interpretation**: How did SHAP values help you understand the Random Forest model compared to just looking at variable importance?
 
+    SHAP values provided a much deeper understanding of the Random Forest model than variable importance alone. While variable importance shows which features are influential on average, SHAP values explain how and in what direction each variable affects a specific prediction.
+
 7.  **Next Steps**: If you were to continue this analysis, what would you do next?
+
+    If I were to continue this analysis, I would incorporate additional variables such as food costs, distance to grocery stores, or local policy factors. I would also like to look at trends over time, as well as testing other models/variable combinations.
 :::
 
 ------------------------------------------------------------------------
@@ -681,6 +758,8 @@ Answer these questions in text below:
 ## For Extra Credit
 
 Try one or more of these extensions:
+
+Did not have time to attempt.
 
 ### Extension 1: Regional Analysis
 
@@ -719,13 +798,13 @@ Try one or more of these extensions:
 
 ## 📝 Submission Checklist
 
--   [ ] All 8 challenges completed with code
--   [ ] Written explanations for each challenge
--   [ ] Reflection questions answered thoroughly
--   [ ] Code is commented and readable
--   [ ] Plots are properly labeled with titles/legends
+-   [x] All 8 challenges completed with code
+-   [x] Written explanations for each challenge
+-   [x] Reflection questions answered thoroughly
+-   [x] Code is commented and readable
+-   [x] Plots are properly labeled with titles/legends
 -   [ ] At least one bonus challenge attempted (optional)
--   [ ] **Rendered to PDF and submitted to Canvas**
+-   [x] **Rendered to PDF and submitted to Canvas**
 
 ------------------------------------------------------------------------
 
