@@ -1,0 +1,28 @@
+---
+title: "Hawaii Ag Land Use"
+format: html
+editor: visual
+---
+
+### **Change in Agricultural Land Use Over Time 🌱**
+
+```{r}
+library(sf)
+library(here)
+library(mapview)
+library(leafsync)
+```
+
+```{r}
+#loading in data
+past <- st_read(here("data/ag_data/Agricultural_Land_Use_-_2015_Baseline.geojson"))
+present <- st_read(here("data/ag_data/Agricultural_Land_Use_-_2020_Update.geojson"))
+```
+
+```{r}
+map1 <- mapview(past, zcol = "cropcatego", alpha = 0.5, legend = FALSE)
+map2 <- mapview(present, zcol = "crops_2020", alpha = 0.5, legend = FALSE)
+
+sync(map1, map2)
+
+```
