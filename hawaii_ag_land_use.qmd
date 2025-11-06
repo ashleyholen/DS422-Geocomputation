@@ -11,6 +11,8 @@ library(sf)
 library(here)
 library(mapview)
 library(leafsync)
+library(dplyr)
+library(ggplot2)
 ```
 
 ```{r}
@@ -19,10 +21,84 @@ past <- st_read(here("data/ag_data/Agricultural_Land_Use_-_2015_Baseline.geojson
 present <- st_read(here("data/ag_data/Agricultural_Land_Use_-_2020_Update.geojson"))
 ```
 
+**2015 vs 2020 Agricultural Land Use by Crop Type**
+
 ```{r}
-map1 <- mapview(past, zcol = "cropcatego", alpha = 0.5, legend = FALSE)
-map2 <- mapview(present, zcol = "crops_2020", alpha = 0.5, legend = FALSE)
+map1 <- mapview(
+  past,
+  zcol = "cropcatego",
+  alpha = 0.6,
+  legend = FALSE,
+  layer.name = "Past Crops"
+)
+
+map2 <- mapview(
+  present,
+  zcol = "crops_2020",
+  alpha = 0.6,
+  legend = FALSE,
+  layer.name = "Present Crops"
+)
 
 sync(map1, map2)
 
+```
+
+**Agricultural Land Loss (2015 to 2020) by Crop Type**
+
+```{r}
+past <- st_make_valid(past)
+present <- st_make_valid(present)
+
+loss_raw <- st_difference(past, st_union(present))
+
+loss_poly <- st_collection_extract(loss_raw, "POLYGON")
+
+loss_poly <- loss_poly[, sapply(loss_poly, function(x) !is.list(x))]
+
+map_loss <- mapview(
+  loss_poly,
+  zcol = "cropcatego",
+  alpha = 0.7,
+  legend = TRUE,
+  layer.name = "Lost Agricultural Land (2015 to 2020)"
+)
+
+map_loss
+
+```
+
+**Agricultural Land Loss (2015 to 2020) by Crop Type Bar Graph**
+
+```{r}
+loss_poly_proj <- st_transform(loss_poly, 3857)  # transform to metric CRS
+
+# Compute area in square meters
+loss_poly_proj <- loss_poly_proj %>%
+  mutate(area_m2 = st_area(geometry)) 
+
+loss_summary <- loss_poly_proj %>%
+  group_by(cropcatego) %>%
+  summarise(total_loss_m2 = sum(area_m2)) %>%
+  ungroup()
+
+loss_summary <- loss_summary %>%
+  mutate(total_loss_ha = as.numeric(total_loss_m2) / 10000)
+
+ggplot(loss_summary, aes(x = reorder(cropcatego, -total_loss_ha), y = total_loss_ha, fill = cropcatego)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Lost Cropland Area per Crop",
+    x = NULL,                # remove x-axis label
+    y = "Lost Area (hectares)",
+    fill = "Crop Type"       # legend title
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),       # remove x-axis text
+    axis.ticks.x = element_blank(),      # remove x-axis ticks
+    legend.position = "right",
+    legend.title = element_text(size = 10),  # smaller legend title
+    legend.text = element_text(size = 8)     # smaller legend labels
+  )
 ```
