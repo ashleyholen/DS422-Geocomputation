@@ -89,16 +89,16 @@ ggplot(loss_summary, aes(x = reorder(cropcatego, -total_loss_ha), y = total_loss
   geom_bar(stat = "identity") +
   labs(
     title = "Lost Cropland Area per Crop",
-    x = NULL,                # remove x-axis label
+    x = NULL,                
     y = "Lost Area (hectares)",
-    fill = "Crop Type"       # legend title
+    fill = "Crop Type"       
   ) +
   theme_minimal() +
   theme(
-    axis.text.x = element_blank(),       # remove x-axis text
-    axis.ticks.x = element_blank(),      # remove x-axis ticks
+    axis.text.x = element_blank(),      
+    axis.ticks.x = element_blank(),     
     legend.position = "right",
-    legend.title = element_text(size = 10),  # smaller legend title
-    legend.text = element_text(size = 8)     # smaller legend labels
+    legend.title = element_text(size = 10), 
+    legend.text = element_text(size = 8)   
   )
 ```
