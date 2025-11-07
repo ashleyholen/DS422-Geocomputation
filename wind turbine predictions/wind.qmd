@@ -1,0 +1,29 @@
+---
+title: "wind_turbine_placement"
+format: html
+editor: visual
+---
+
+```{r}
+library(sf)
+library(here)
+library(mapview)
+library(leafsync)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+turbines <- st_read("/Users/ashleyholen/Desktop/Geocomputation/DS422-Geocomputation/wind turbine predictions/data/uswtdbSHP")
+```
+
+```{r}
+map_turbines <- mapview(
+  turbines,
+  alpha = 0.6,
+  legend = TRUE,            
+  layer.name = "Wind Turbines"
+)
+
+map_turbines
+```
